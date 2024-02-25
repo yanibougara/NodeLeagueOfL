@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Accueil</title>
+    </head>
+    <body>
+     
+        <label for="champion">Nom</label>
+        <input type="text" name="champion" />
+        <label for="type">Type</label>
+        <input type="text" name="type" />
+        <button onclick="Createchampion()">Créer un champion</button>
+        <button onclick="deletechampion()">Supprimer un champion</button>
+        <button onclick="updatechampion()">Modifier un champion</button>
+        <button onclick="getChampion()">Voir un champion</button>
+        <button onclick="getChampions()">Voir tous les champions</button>
+        <button id="seedButton">Seed Champions</button>
+
+        <h1>Gestion des champions</h1>
+        <div class="champions"></div>
+
+        <div id="champion-details"></div>
+     
+
+        <script>
+            const champions = document.querySelector(".champions");
+
+            fetch("http://localhost:3000/champions")
+                .then((response) => response.json())
+                .then((data) => {
+                    data.forEach((champion) => {
+                        const championElement = document.createElement("div");
+                        championElement.innerHTML = `
+                        <h1> nom : ${champion.name}</h1>
+                        <p> type : ${champion.type}</p>
+                         <p> id : ${champion.id}</p>
+                    `;
+                        champions.appendChild(championElement);
+                    });
+                });
+
+            const Createchampion = () => {
+                let champion = document.querySelector(
+                    'input[name="champion"]'
+                ).value;
+                let type = document.querySelector('input[name="type"]').value;
+                let response = fetch("http://localhost:3000/champions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ name: champion, type: type }),
+                });
+                window.location.reload();
+            };
+
+            const deletechampion = () => {
+                let championName = prompt(
+                    "Entrez le l'id du champion à supprimer:"
+                );
+                if (championName) {
+                    fetch(`http://localhost:3000/champions/${championName}`, {
+                        method: "DELETE",
+                    })
+                        .then((response) => {
+                            if (response.ok) {
+                                console.log(
+                                    `Le champion ${championName} a été supprimé avec succès.`
+                                );
+                                window.location.reload(); // Recharger la page pour refléter les changements
+                            } else {
+                                console.error(
+                                    `Une erreur s'est produite lors de la suppression du champion ${championName}.`
+                                );
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(
+                                `Erreur lors de la suppression du champion ${championName}:`,
+                                error
+                            );
+                        });
+                }
+            };
+
+            const updatechampion = () => {
+                let championName = prompt(
+                    "Entrez l'id du champion à modifier:"
+                );
+                if (championName) {
+                    let newchampionName = prompt(
+                        "Entrez le nouveau nom du champion:"
+                    );
+                    let newType = prompt("Entrez le nouveau type du champion:");
+                    fetch(`http://localhost:3000/champions/${championName}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            name: newchampionName,
+                            type: newType,
+                        }),
+                    })
+                        .then((response) => {
+                            if (response.ok) {
+                                console.log(
+                                    `Le champion ${championName} a été modifié avec succès.`
+                                );
+                                window.location.reload(); 
+                            } else {
+                                console.error(
+                                    `Une erreur s'est produite lors de la modification du champion ${championName}.`
+                                );
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(
+                                `Erreur lors de la modification du champion ${championName}:`,
+                                error
+                            );
+                        });
+                }
+            };
+
+            const getChampion = () => {
+                let championId = prompt("Entrez l'ID du champion à voir:");
+                if (championId) {
+                    fetch(`http://localhost:3000/champions/${championId}`)
+                        .then((response) => response.json())
+                        .then((champion) => {
+                            const championDetails =
+                                document.querySelector("#champion-details");
+                            championDetails.innerHTML = `
+                <h2>${champion.name}</h2>
+                <p>Type: ${champion.type}</p>
+            `;
+
+                           
+                            const championsContainer =
+                                document.querySelector(".champions");
+                            championsContainer.innerHTML = ""; 
+
+                          
+                            const championElement =
+                                document.createElement("div");
+                            championElement.innerHTML = `
+                <h2>${champion.name}</h2>
+                <p>Type: ${champion.type}</p>
+            `;
+                            championsContainer.appendChild(championElement);
+                        })
+                        .catch((error) => {
+                            console.error(
+                                `Erreur lors de la récupération du champion avec l'ID ${championId}:`,
+                                error
+                            );
+                        });
+                }
+            };
+
+            const getChampions = () => {
+                fetch("http://localhost:3000/champions")
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const championsContainer =
+                            document.querySelector(".champions");
+                        championsContainer.innerHTML = ""; // Vider le contenu
+
+                        data.forEach((champion) => {
+                            const championElement =
+                                document.createElement("div");
+                            championElement.innerHTML = `
+                <h2>${champion.name}</h2>
+                <p>${champion.type}</p>
+            `;
+                            championsContainer.appendChild(championElement);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error(
+                            "Erreur lors de la récupération de tous les champions:",
+                            error
+                        );
+                    });
+            };
+
+            document
+                .getElementById("seedButton")
+                .addEventListener("click", function () {
+                    fetch("/seed-champions", {
+                        method: "POST",
+                    })
+                        .then((response) => {
+                            if (response.ok) {
+                                console.log("Champions seeded successfully.");
+                            } else {
+                                console.error("Failed to seed champions.");
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error seeding champions:", error);
+                        });
+                });
+        </script>
+
+        <style>
+            body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    width: 15%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.champions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.champions div {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+
+#seedButton {
+    background-color: #28a745;
+}
+
+#seedButton:hover {
+    background-color: #218838;
+}
+
+
+            .champions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            .champions div {
+                border: 1px solid #000;
+                padding: 1rem;
+                background-color: #f0f8ff8a;
+            }
+
+          
+                    body {
+            background-image: url('../front/lol.webp');
+            background-size: cover; /* Pour couvrir toute la fenêtre */
+            background-position: center; /* Pour centrer l'image */
+        }
+
+        </style>
+    </body>
+</html>

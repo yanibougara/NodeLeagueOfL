@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="agent"></div>
+        <button onclick="deleteChampion()">delete</button>
+        <script>
+            let url = new URL(window.location.href);
+            let id = url.searchParams.get("id");
+
+            fetch(`http://localhost:3000/champion/${id}`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data);
+                let agent = document.querySelector("#champion");
+                agent.innerHTML = `
+                    <small>${champion.id}</small>
+                    <h1>${champion.name}</h1>
+                    <a href>rename.html</a>
+                    <a href="index.html">Retour</a>
+                `;
+            });
+        </script>
+    </body>
+</html>
